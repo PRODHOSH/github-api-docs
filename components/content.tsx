@@ -208,6 +208,21 @@ export function Content({ pageId }: ContentProps) {
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-950">
+      {/* Header Banner */}
+      <div className="bg-blue-950 border-b border-blue-900 px-8 py-3">
+        <p className="text-sm text-blue-200">
+          <span className="font-semibold">GitHub API Handbook:</span> A reference guide for developers. Not affiliated with GitHub.{' '}
+          <a
+            href="https://prodhosh.netlify.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-blue-100"
+          >
+            Created by Prodhosh
+          </a>
+        </p>
+      </div>
+
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="px-8 py-4 border-b border-slate-800 flex items-center gap-2 text-sm text-slate-400">

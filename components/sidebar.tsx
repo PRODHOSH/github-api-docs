@@ -176,8 +176,21 @@ export function Sidebar({ selectedId = 'intro', onSelectItem }: SidebarProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-        Built for developers • Powered by GitHub API
+      <div className="p-4 border-t border-slate-800 space-y-3">
+        <div className="text-xs text-slate-400 text-center leading-relaxed">
+          <p className="text-slate-500 mb-2">Built for developers</p>
+          <p className="text-slate-600 text-[11px]">
+            Not affiliated with GitHub. Created by{' '}
+            <a
+              href="https://prodhosh.netlify.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline"
+            >
+              Prodhosh
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )
