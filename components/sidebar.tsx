@@ -87,6 +87,19 @@ const sections: SidebarSection[] = [
   },
 ]
 
+const FREQUENTLY_USED_IDS = new Set([
+  'auth',
+  'rate-limits',
+  'get-user',
+  'get-repo',
+  'list-repos',
+  'get-readme',
+  'list-commits',
+  'list-issues',
+  'list-prs',
+  'repo-views',
+])
+
 interface SidebarProps {
   selectedId?: string
   onSelectItem: (id: string) => void
@@ -109,12 +122,16 @@ export function Sidebar({ selectedId = 'intro', onSelectItem }: SidebarProps) {
     setExpandedSections(newExpanded)
   }
 
-  const filteredSections = sections
+  const displaySections = frequentlyUsed ? sections : sections
+
+  const filteredSections = displaySections
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) =>
-        item.label.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
+      items: section.items.filter((item) => {
+        const matchesSearch = item.label.toLowerCase().includes(searchTerm.toLowerCase())
+        const isFrequent = frequentlyUsed ? FREQUENTLY_USED_IDS.has(item.id) : true
+        return matchesSearch && isFrequent
+      }),
     }))
     .filter(
       (section) =>
