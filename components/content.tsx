@@ -20,20 +20,24 @@ const contentMap: Record<
     }>
     response?: string
     useCases?: string[]
+    sections?: Array<{
+      heading: string
+      content: string
+    }>
   }
 > = {
   intro: {
     title: 'Introduction',
-    subtitle: 'Welcome to the GitHub API',
+    subtitle: 'Welcome to the GitHub API Handbook',
     breadcrumb: ['Home', 'Getting Started', 'Introduction'],
     description:
-      'The GitHub API is a REST API that provides access to GitHub data and functionality. You can use the API to automate tasks, extend GitHub, and build applications that integrate with GitHub.',
-    syntax: 'Base URL: https://api.github.com\nAPI Version: 2022-11-28\nFormat: JSON',
-    useCases: [
-      'Automate repository management and workflows',
-      'Build custom applications and integrations',
-      'Analyze repository metrics and contributor data',
-      'Manage issues, pull requests, and discussions',
+      'The GitHub API allows developers to interact programmatically with nearly every aspect of GitHub. Through this API, you can retrieve public data, analyze repositories, automate workflows, and build custom developer tools.',
+    sections: [
+      {
+        heading: 'What You Will Learn',
+        content:
+          'This handbook serves as a structured, beginner-to-advanced reference for working with the GitHub REST API. It focuses on practical usage, clear explanations, and real-world developer use cases rather than abstract theory.\n\nYou will learn how to:\n• Authenticate requests securely\n• Fetch user and repository data\n• Extract commits, issues, and pull requests\n• Analyze repository traffic and engagement\n• Build applications that integrate with GitHub\n\nThis guide assumes basic familiarity with HTTP requests and JSON.',
+      },
     ],
   },
   auth: {
@@ -41,9 +45,25 @@ const contentMap: Record<
     subtitle: 'Authenticating with the GitHub API',
     breadcrumb: ['Home', 'Getting Started', 'Authentication'],
     description:
-      'GitHub supports two main authentication methods: OAuth for user authorization and Personal Access Tokens for API access. Choose the method that best fits your use case.',
+      'Most GitHub API requests require authentication using a Personal Access Token (PAT).',
+    sections: [
+      {
+        heading: 'Creating a Token',
+        content:
+          '1. Open GitHub → Settings\n2. Navigate to Developer Settings → Personal Access Tokens\n3. Click "Generate new token"\n4. Select required scopes (at minimum: repo and read:user)\n5. Copy and securely store your token',
+      },
+      {
+        heading: 'Using the Token',
+        content: 'Include it in the request header:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
+      },
+      {
+        heading: 'Why Authentication is Necessary',
+        content:
+          '• Higher rate limits\n• Access to private repositories (if permitted)\n• Ability to create, modify, or delete data\n• More detailed analytics and metadata access\n\nUnauthenticated requests are heavily limited and should only be used for testing.',
+      },
+    ],
     syntax:
-      'Authorization: Bearer YOUR_GITHUB_TOKEN\n\nHeaders:\nAccept: application/vnd.github+json\nX-GitHub-Api-Version: 2022-11-28',
+      'GET https://api.github.com/user\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
     useCases: [
       'OAuth for third-party applications',
       'Personal Access Tokens for CLI tools',
@@ -55,9 +75,23 @@ const contentMap: Record<
     subtitle: 'Understanding GitHub API rate limits',
     breadcrumb: ['Home', 'Getting Started', 'Rate Limits'],
     description:
-      'The GitHub API has rate limits to ensure fair access for all users. Rate limits vary depending on authentication type and endpoint.',
-    syntax:
-      'Unauthenticated: 60 requests per hour\nAuthenticated: 5,000 requests per hour\nGraphQL: 5,000 points per hour',
+      'GitHub enforces request limits to prevent abuse.',
+    sections: [
+      {
+        heading: 'Limit Tiers',
+        content:
+          'Unauthenticated requests: Very limited (typically 60 requests per hour)\nAuthenticated requests: Significantly higher limits (typically 5,000 requests per hour)',
+      },
+      {
+        heading: 'Checking Your Rate Limit',
+        content: 'GET https://api.github.com/rate_limit',
+      },
+      {
+        heading: 'Best Practices',
+        content:
+          '• Cache responses where possible\n• Avoid polling too frequently\n• Use pagination correctly\n• Authenticate whenever possible',
+      },
+    ],
     useCases: [
       'Monitor rate limit headers in responses',
       'Implement exponential backoff for retries',
@@ -66,10 +100,10 @@ const contentMap: Record<
   },
   'get-user': {
     title: 'GET /users/{username}',
-    subtitle: 'Retrieve public profile information for a GitHub user',
+    subtitle: 'Get User Profile',
     breadcrumb: ['Home', 'Users API', 'Get User Profile'],
     description:
-      'This endpoint returns detailed information about a GitHub user, including profile metadata, followers, and public repositories.',
+      'Retrieves public profile information for a GitHub user.',
     syntax:
       'GET https://api.github.com/users/{username}\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
     parameters: [
@@ -78,31 +112,114 @@ const contentMap: Record<
     response: `{
   "login": "octocat",
   "id": 583231,
-  "node_id": "MDQ6VXNlcjU4MzIzMQ==",
   "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
-  "gravatar_id": "",
-  "url": "https://api.github.com/users/octocat",
   "name": "The Octocat",
   "company": "@github",
-  "blog": "https://github.blog",
-  "location": "San Francisco",
   "bio": "There once was...",
+  "location": "San Francisco",
   "public_repos": 8,
   "followers": 3938,
-  "following": 9
+  "following": 9,
+  "created_at": "2011-01-25T18:44:36Z",
+  "updated_at": "2023-10-15T12:34:56Z"
 }`,
+    sections: [
+      {
+        heading: 'Response includes',
+        content:
+          '• login – username\n• name – full name\n• bio – profile bio\n• avatar_url – profile image\n• public_repos – number of public repos\n• followers – follower count\n• following – following count\n• created_at – account creation date',
+      },
+    ],
     useCases: [
-      'Build a profile dashboard',
-      'Analyze developer influence and activity',
-      'Create user directories and discovery tools',
+      'Build a GitHub profile viewer',
+      'Display user statistics on a website',
+      'Analyze developer activity',
+    ],
+  },
+  'list-followers': {
+    title: 'GET /users/{username}/followers',
+    subtitle: 'List Followers',
+    breadcrumb: ['Home', 'Users API', 'List Followers'],
+    description:
+      'Retrieves a list of users who follow a given user.',
+    syntax:
+      'GET https://api.github.com/users/{username}/followers\nQuery Parameters: per_page, page',
+    parameters: [
+      { name: 'username', type: 'string', desc: 'GitHub username (required)' },
+      { name: 'per_page', type: 'integer', desc: 'Results per page (1-100)' },
+      { name: 'page', type: 'integer', desc: 'Page number for pagination' },
+    ],
+    useCases: [
+      'Analyze community reach',
+      'Build social-style follower visualizations',
+      'Identify influential developers',
+    ],
+  },
+  'list-following': {
+    title: 'GET /users/{username}/following',
+    subtitle: 'List Following',
+    breadcrumb: ['Home', 'Users API', 'List Following'],
+    description:
+      'Retrieves users that a given user is following.',
+    syntax:
+      'GET https://api.github.com/users/{username}/following\nQuery Parameters: per_page, page',
+    parameters: [
+      { name: 'username', type: 'string', desc: 'GitHub username (required)' },
+      { name: 'per_page', type: 'integer', desc: 'Results per page (1-100)' },
+    ],
+    useCases: [
+      'Understand developer interests',
+      'Track networking patterns',
+      'Identify potential collaborators',
+    ],
+  },
+  'get-repo': {
+    title: 'GET /repos/{owner}/{repo}',
+    subtitle: 'Get Repo Details',
+    breadcrumb: ['Home', 'Repositories API', 'Get Repo Details'],
+    description:
+      'Fetches metadata about a specific repository.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+    ],
+    response: `{
+  "id": 1296269,
+  "name": "Hello-World",
+  "full_name": "octocat/Hello-World",
+  "owner": {"login": "octocat", "id": 1},
+  "description": "This your first repo!",
+  "private": false,
+  "html_url": "https://github.com/octocat/Hello-World",
+  "language": "JavaScript",
+  "stargazers_count": 80,
+  "watchers_count": 80,
+  "forks_count": 9,
+  "open_issues_count": 0,
+  "created_at": "2011-01-26T19:01:12Z",
+  "updated_at": "2023-10-15T12:34:56Z"
+}`,
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• Repository name\n• Description\n• Primary language\n• Stars, forks, watchers\n• License\n• Topics\n• Last updated time',
+      },
+    ],
+    useCases: [
+      'Display repo info in dashboards',
+      'Analyze popularity',
+      'Compare multiple repositories',
     ],
   },
   'list-repos': {
     title: 'GET /users/{username}/repos',
-    subtitle: 'List repositories owned by a user',
+    subtitle: 'List Repos',
     breadcrumb: ['Home', 'Repositories API', 'List Repos'],
     description:
-      'This endpoint returns a list of repositories owned by a GitHub user. You can sort by various criteria and filter by type.',
+      'Retrieves all public repositories of a user.',
     syntax:
       'GET https://api.github.com/users/{username}/repos\nQuery Parameters: sort, order, per_page, page',
     parameters: [
@@ -112,17 +229,53 @@ const contentMap: Record<
       { name: 'per_page', type: 'integer', desc: 'Results per page (1-100)' },
     ],
     useCases: [
-      'Create portfolio showcases',
-      'Analyze code contribution history',
-      'Build repository search and discovery tools',
+      'Portfolio displays',
+      'Automated repo analysis',
+      'Bulk data collection',
+    ],
+  },
+  'get-readme': {
+    title: 'GET /repos/{owner}/{repo}/readme',
+    subtitle: 'Get README',
+    breadcrumb: ['Home', 'Repositories API', 'Get README'],
+    description:
+      'Fetches the README file of a repository.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/readme\nHeaders:\nAccept: application/vnd.github.v3.raw',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+    ],
+    useCases: [
+      'Display README in custom UI',
+      'Extract documentation content',
+      'Analyze project descriptions',
+    ],
+  },
+  'list-branches': {
+    title: 'GET /repos/{owner}/{repo}/branches',
+    subtitle: 'List Branches',
+    breadcrumb: ['Home', 'Repositories API', 'List Branches'],
+    description:
+      'Retrieves all branches in a repository.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/branches\nQuery Parameters: per_page, page',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+    ],
+    useCases: [
+      'Track development workflow',
+      'Identify active branches',
+      'Monitor version control structure',
     ],
   },
   'list-commits': {
     title: 'GET /repos/{owner}/{repo}/commits',
-    subtitle: 'List commits on a repository',
+    subtitle: 'List Commits',
     breadcrumb: ['Home', 'Commits & Contributions', 'List Commits'],
     description:
-      'This endpoint lists the commit history for a repository. You can filter by author, date range, and other criteria.',
+      'Retrieves commit history for a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/commits\nQuery Parameters: sha, path, author, since, until, per_page',
     parameters: [
@@ -131,18 +284,64 @@ const contentMap: Record<
       { name: 'sha', type: 'string', desc: 'SHA or branch name' },
       { name: 'author', type: 'string', desc: 'Filter by commit author' },
     ],
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• Commit message\n• Author\n• Timestamp\n• Files changed',
+      },
+    ],
     useCases: [
-      'Analyze code contribution patterns',
-      'Generate project history reports',
-      'Track feature implementation timelines',
+      'Activity tracking',
+      'Contribution analysis',
+      'Code history visualization',
+    ],
+  },
+  'get-commit': {
+    title: 'GET /repos/{owner}/{repo}/commits/{sha}',
+    subtitle: 'Get Commit Details',
+    breadcrumb: ['Home', 'Commits & Contributions', 'Get Commit Details'],
+    description:
+      'Fetches detailed information about a specific commit.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/commits/{sha}\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+      { name: 'sha', type: 'string', desc: 'Commit SHA hash' },
+    ],
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• Full commit message\n• Parent commits\n• Files modified\n• Lines added/removed',
+      },
+    ],
+  },
+  'contributor-stats': {
+    title: 'GET /repos/{owner}/{repo}/stats/contributors',
+    subtitle: 'Contributor Stats',
+    breadcrumb: ['Home', 'Commits & Contributions', 'Contributor Stats'],
+    description:
+      'Retrieves contribution statistics for a repository.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/stats/contributors\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+    ],
+    useCases: [
+      'Identify top contributors',
+      'Analyze team productivity',
+      'Visualize coding patterns',
     ],
   },
   'list-issues': {
     title: 'GET /repos/{owner}/{repo}/issues',
-    subtitle: 'List issues in a repository',
+    subtitle: 'List Issues',
     breadcrumb: ['Home', 'Issues & Discussions', 'List Issues'],
     description:
-      'This endpoint returns a list of issues for a repository. You can filter by state, labels, assignee, and other criteria.',
+      'Retrieves all issues in a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/issues\nQuery Parameters: state, labels, sort, direction, per_page',
     parameters: [
@@ -151,18 +350,44 @@ const contentMap: Record<
       { name: 'state', type: 'string', desc: 'open, closed, or all' },
       { name: 'labels', type: 'string', desc: 'Comma-separated label names' },
     ],
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• Issue title\n• Creator\n• Status (open/closed)\n• Comments\n• Creation date',
+      },
+    ],
     useCases: [
-      'Track project issue metrics',
-      'Build issue management dashboards',
-      'Monitor project health and progress',
+      'Community management',
+      'Bug tracking dashboards',
+      'Issue analytics',
+    ],
+  },
+  'issue-comments': {
+    title: 'GET /repos/{owner}/{repo}/issues/{issue_number}/comments',
+    subtitle: 'Get Issue Comments',
+    breadcrumb: ['Home', 'Issues & Discussions', 'Get Issue Comments'],
+    description:
+      'Retrieves comments on a specific issue.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments\nQuery Parameters: per_page, page',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+      { name: 'issue_number', type: 'integer', desc: 'Issue number' },
+    ],
+    useCases: [
+      'Analyze discussions',
+      'Build comment visualization tools',
+      'Integrate with chatbots',
     ],
   },
   'list-prs': {
     title: 'GET /repos/{owner}/{repo}/pulls',
-    subtitle: 'List pull requests',
+    subtitle: 'List PRs',
     breadcrumb: ['Home', 'Pull Requests', 'List PRs'],
     description:
-      'This endpoint lists pull requests for a repository. You can filter by state, sort by various criteria, and paginate through results.',
+      'Retrieves all pull requests for a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/pulls\nQuery Parameters: state, sort, direction, per_page',
     parameters: [
@@ -171,24 +396,68 @@ const contentMap: Record<
       { name: 'state', type: 'string', desc: 'open, closed, or all' },
       { name: 'sort', type: 'string', desc: 'created, updated, popularity, long-running' },
     ],
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• PR title\n• Author\n• Status\n• Creation date',
+      },
+    ],
+  },
+  'pr-reviews': {
+    title: 'GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
+    subtitle: 'PR Reviews',
+    breadcrumb: ['Home', 'Pull Requests', 'PR Reviews'],
+    description:
+      'Retrieves reviews for a specific pull request.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/reviews',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+      { name: 'pull_number', type: 'integer', desc: 'Pull request number' },
+    ],
     useCases: [
-      'Monitor pull request activity',
-      'Analyze review turnaround times',
-      'Build contribution analytics tools',
+      'Code review analysis',
+      'Team performance tracking',
+      'Automated feedback tools',
     ],
   },
   'repo-views': {
     title: 'GET /repos/{owner}/{repo}/traffic/views',
-    subtitle: 'Repository traffic views',
+    subtitle: 'Repo Views',
     breadcrumb: ['Home', 'Analytics & Traffic', 'Repo Views'],
     description:
-      'This endpoint provides traffic information for a repository, including the number of views over time.',
+      'Retrieves view statistics for a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/traffic/views\nPermissions: Push access required',
+    sections: [
+      {
+        heading: 'Returns',
+        content:
+          '• Total views\n• Unique visitors\n• Daily breakdown',
+      },
+    ],
     useCases: [
-      'Track repository popularity and reach',
-      'Analyze project growth metrics',
-      'Monitor engagement trends',
+      'Measure project adoption',
+      'Track developer interest',
+    ],
+  },
+  'repo-clones': {
+    title: 'GET /repos/{owner}/{repo}/traffic/clones',
+    subtitle: 'Repo Clones',
+    breadcrumb: ['Home', 'Analytics & Traffic', 'Repo Clones'],
+    description:
+      'Retrieves clone statistics for a repository.',
+    syntax:
+      'GET https://api.github.com/repos/{owner}/{repo}/traffic/clones\nQuery Parameters: per, per_page',
+    parameters: [
+      { name: 'owner', type: 'string', desc: 'Repository owner username' },
+      { name: 'repo', type: 'string', desc: 'Repository name' },
+    ],
+    useCases: [
+      'Measure project adoption',
+      'Track developer interest',
     ],
   },
 }
@@ -204,6 +473,7 @@ export function Content({ pageId }: ContentProps) {
     parameters,
     response,
     useCases,
+    sections,
   } = content
 
   return (
@@ -284,6 +554,22 @@ export function Content({ pageId }: ContentProps) {
                 <code className="text-slate-300 font-mono text-sm">{response}</code>
               </pre>
             </section>
+          )}
+
+          {/* Sections */}
+          {sections && sections.length > 0 && (
+            <>
+              {sections.map((section, idx) => (
+                <section key={idx} className="mb-10">
+                  <h2 className="text-lg font-semibold text-slate-100 mb-3">
+                    {section.heading}
+                  </h2>
+                  <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {section.content}
+                  </p>
+                </section>
+              ))}
+            </>
           )}
 
           {/* Use Cases */}
