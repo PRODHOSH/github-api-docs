@@ -1,5 +1,6 @@
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { ChevronRight } from 'lucide-react'
+import { ContactForm } from './contact-form'
 
 interface ContentProps {
   pageId: string
@@ -25,6 +26,7 @@ const contentMap: Record<
       heading: string
       content: string
     }>
+    isContact?: boolean
   }
 > = {
   intro: {
@@ -663,6 +665,14 @@ const contentMap: Record<
       },
     ],
   },
+  'contact-developer': {
+    title: 'Contact Developer',
+    subtitle: 'Get in touch with Prodhosh',
+    breadcrumb: ['Home', 'Contact', 'Contact Developer'],
+    description:
+      'Have a question about the GitHub API Handbook or want to collaborate? Feel free to reach out!',
+    isContact: true,
+  },
 }
 
 export function Content({ pageId }: ContentProps) {
@@ -678,7 +688,13 @@ export function Content({ pageId }: ContentProps) {
     response,
     useCases,
     sections,
+    isContact,
   } = content
+
+  // Render contact form for contact page
+  if (isContact) {
+    return <ContactForm />
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-950">

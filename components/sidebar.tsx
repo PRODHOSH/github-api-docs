@@ -85,6 +85,12 @@ const sections: SidebarSection[] = [
       { id: 'status-codes', label: 'Status Codes' },
     ],
   },
+  {
+    title: 'Contact',
+    items: [
+      { id: 'contact-developer', label: 'Contact Developer' },
+    ],
+  },
 ]
 
 const FREQUENTLY_USED_IDS = new Set([
