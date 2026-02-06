@@ -20,6 +20,8 @@ const sections: SidebarSection[] = [
       { id: 'intro', label: 'Introduction' },
       { id: 'auth', label: 'Authentication' },
       { id: 'rate-limits', label: 'Rate Limits' },
+      { id: 'pagination', label: 'Pagination' },
+      { id: 'api-vs-scraping', label: 'API vs Web Scraping' },
     ],
   },
   {
@@ -66,7 +68,21 @@ const sections: SidebarSection[] = [
     items: [
       { id: 'repo-views', label: 'Repo Views' },
       { id: 'repo-clones', label: 'Repo Clones' },
-      { id: 'traffic-sources', label: 'Traffic Sources' },
+    ],
+  },
+  {
+    title: 'Common Workflows',
+    items: [
+      { id: 'workflow-profile-dashboard', label: 'Build Profile Dashboard' },
+      { id: 'workflow-track-growth', label: 'Track Repo Growth' },
+      { id: 'workflow-analyze-contributions', label: 'Analyze Contributions' },
+    ],
+  },
+  {
+    title: 'Errors & Debugging',
+    items: [
+      { id: 'common-errors', label: 'Common Errors' },
+      { id: 'status-codes', label: 'Status Codes' },
     ],
   },
 ]

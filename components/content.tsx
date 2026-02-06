@@ -13,6 +13,7 @@ const contentMap: Record<
     breadcrumb: string[]
     description: string
     syntax?: string
+    curl?: string
     parameters?: Array<{
       name: string
       type: string
@@ -106,6 +107,7 @@ const contentMap: Record<
       'Retrieves public profile information for a GitHub user.',
     syntax:
       'GET https://api.github.com/users/{username}\nHeaders:\nAuthorization: Bearer YOUR_GITHUB_TOKEN',
+    curl: 'curl -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \\\n  https://api.github.com/users/octocat',
     parameters: [
       { name: 'username', type: 'string', desc: 'GitHub username (required)' },
     ],
@@ -222,6 +224,7 @@ const contentMap: Record<
       'Retrieves all public repositories of a user.',
     syntax:
       'GET https://api.github.com/users/{username}/repos\nQuery Parameters: sort, order, per_page, page',
+    curl: 'curl -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \\\n  "https://api.github.com/users/octocat/repos?sort=updated&per_page=10"',
     parameters: [
       { name: 'username', type: 'string', desc: 'GitHub username' },
       { name: 'sort', type: 'string', desc: 'created, updated, pushed, full_name' },
@@ -278,6 +281,7 @@ const contentMap: Record<
       'Retrieves commit history for a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/commits\nQuery Parameters: sha, path, author, since, until, per_page',
+    curl: 'curl -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \\\n  "https://api.github.com/repos/torvalds/linux/commits?per_page=5"',
     parameters: [
       { name: 'owner', type: 'string', desc: 'Repository owner username' },
       { name: 'repo', type: 'string', desc: 'Repository name' },
@@ -344,6 +348,7 @@ const contentMap: Record<
       'Retrieves all issues in a repository.',
     syntax:
       'GET https://api.github.com/repos/{owner}/{repo}/issues\nQuery Parameters: state, labels, sort, direction, per_page',
+    curl: 'curl -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \\\n  "https://api.github.com/repos/facebook/react/issues?state=open&per_page=5"',
     parameters: [
       { name: 'owner', type: 'string', desc: 'Repository owner username' },
       { name: 'repo', type: 'string', desc: 'Repository name' },
@@ -460,6 +465,204 @@ const contentMap: Record<
       'Track developer interest',
     ],
   },
+  pagination: {
+    title: 'Pagination',
+    subtitle: 'Handling paginated API responses',
+    breadcrumb: ['Home', 'Getting Started', 'Pagination'],
+    description:
+      'Most GitHub API endpoints that return lists are paginated. By default, the API returns 30 items per page. You can request up to 100 items per page, and navigate through results using query parameters.',
+    sections: [
+      {
+        heading: 'Basic Pagination',
+        content:
+          'Add per_page and page query parameters:\n\n?per_page=50&page=2\n\n• per_page: Number of results per page (1-100, default: 30)\n• page: Page number (starts at 1)',
+      },
+      {
+        heading: 'Example: List Repos with Pagination',
+        content:
+          'Get the first 50 repos:\nhttps://api.github.com/users/octocat/repos?per_page=50&page=1\n\nGet the next 50 repos:\nhttps://api.github.com/users/octocat/repos?per_page=50&page=2',
+      },
+      {
+        heading: 'Link Headers',
+        content:
+          'GitHub includes Link headers in responses with URLs for first, last, next, and previous pages.\n\nExample header:\nLink: <https://api.github.com/user/repos?page=3&per_page=100>; rel="next", <https://api.github.com/user/repos?page=50&per_page=100>; rel="last"',
+      },
+      {
+        heading: 'Best Practices',
+        content:
+          '• Always check the Link header for pagination info\n• Use per_page=100 for most queries\n• Cache results when possible to avoid repeated requests\n• Implement backoff if you hit rate limits\n• Avoid over-paginating through thousands of results',
+      },
+    ],
+  },
+  'api-vs-scraping': {
+    title: 'API vs Web Scraping',
+    subtitle: 'Why use the GitHub API instead of scraping',
+    breadcrumb: ['Home', 'Getting Started', 'API vs Web Scraping'],
+    description:
+      'While it\'s technically possible to scrape GitHub\'s website with tools like BeautifulSoup or Selenium, using the official API is always the better choice for developers.',
+    sections: [
+      {
+        heading: 'Why Use the API',
+        content:
+          '✓ Structured Data: JSON format is easy to parse\n✓ Reliable: Consistent endpoint behavior\n✓ Legal: Official and authorized method\n✓ Performant: Optimized for high throughput\n✓ Rate Limits: Fair usage through authentication\n✓ Real-time: Webhooks available for live updates\n✓ Complete: Access to all GitHub data\n✓ Future-proof: Won\'t break when UI changes',
+      },
+      {
+        heading: 'Why Web Scraping is Bad',
+        content:
+          '✗ Fragile: Breaks whenever GitHub changes HTML\n✗ Slow: Must load entire webpage and parse\n✗ Blocked: GitHub blocks automated scrapers\n✗ Terms: Violates GitHub\'s Terms of Service\n✗ Limited: Only public page content available\n✗ Wasteful: Consumes unnecessary bandwidth\n✗ Detection: Can get your IP banned\n✗ Maintenance: High ongoing development cost',
+      },
+      {
+        heading: 'Real Example',
+        content:
+          'Scraping: Load HTML page → Find div classes → Extract text → Repeat for pagination\nAPI: Single JSON request → Parse structured data → Done\n\nAPI is faster and more reliable.',
+      },
+    ],
+  },
+  'workflow-profile-dashboard': {
+    title: 'Build a GitHub Profile Dashboard',
+    subtitle: 'Complete workflow example',
+    breadcrumb: ['Home', 'Common Workflows', 'Build Profile Dashboard'],
+    description:
+      'Learn how to build a complete GitHub profile dashboard by combining multiple API endpoints.',
+    sections: [
+      {
+        heading: 'Step 1: Get User Profile',
+        content:
+          'GET https://api.github.com/users/{username}\n\nReturns: Name, bio, avatar, followers, following, public repos count',
+      },
+      {
+        heading: 'Step 2: List Repositories',
+        content:
+          'GET https://api.github.com/users/{username}/repos?per_page=10&sort=stars\n\nReturns: Recent and starred repos with star counts',
+      },
+      {
+        heading: 'Step 3: Get Contributor Stats',
+        content:
+          'GET https://api.github.com/repos/{owner}/{repo}/stats/contributors\n\nReturns: Contribution history for each repo',
+      },
+      {
+        heading: 'Step 4: Combine and Display',
+        content:
+          'Now you have all the data to create a dashboard showing:\n• User profile card with avatar\n• Top repositories with star counts\n• Contribution statistics\n• Activity timeline\n• Follower/following counts\n\nCache this data since contributors endpoint is slow on first request.',
+      },
+    ],
+  },
+  'workflow-track-growth': {
+    title: 'Track Repo Growth',
+    subtitle: 'Monitor repository metrics over time',
+    breadcrumb: ['Home', 'Common Workflows', 'Track Repo Growth'],
+    description:
+      'Build a system to track how your repository grows by monitoring stars, forks, and issues over time.',
+    sections: [
+      {
+        heading: 'Step 1: Fetch Current Stats',
+        content:
+          'GET https://api.github.com/repos/{owner}/{repo}\n\nExtract:\n• stargazers_count\n• forks_count\n• watchers_count\n• open_issues_count',
+      },
+      {
+        heading: 'Step 2: Store Historical Data',
+        content:
+          'Save the current stats to your database with a timestamp:\n\n{\n  "date": "2024-01-15",\n  "stars": 1250,\n  "forks": 340,\n  "issues": 45\n}',
+      },
+      {
+        heading: 'Step 3: Schedule Daily Updates',
+        content:
+          'Use a cron job or GitHub Actions to run this check daily.\n\nExample GitHub Actions:\n\n- cron: "0 0 * * *"\n\nThis runs at midnight every day.',
+      },
+      {
+        heading: 'Step 4: Visualize Growth',
+        content:
+          'Plot the data over time:\n• Line chart: Stars trending up/down\n• Bar chart: Monthly growth\n• Metrics: Growth rate percentage\n\nThis shows if your project is gaining or losing momentum.',
+      },
+    ],
+  },
+  'workflow-analyze-contributions': {
+    title: 'Analyze Contributions',
+    subtitle: 'Understand developer contribution patterns',
+    breadcrumb: ['Home', 'Common Workflows', 'Analyze Contributions'],
+    description:
+      'Discover which developers are most active, what they\'re working on, and how to recognize contributions.',
+    sections: [
+      {
+        heading: 'Step 1: Get Contributor Statistics',
+        content:
+          'GET https://api.github.com/repos/{owner}/{repo}/stats/contributors\n\nReturns an array of contributors with commit counts per week',
+      },
+      {
+        heading: 'Step 2: Identify Top Contributors',
+        content:
+          'Sort by total contributions:\n\nconst topContributors = stats\n  .sort((a, b) => b.total - a.total)\n  .slice(0, 10)',
+      },
+      {
+        heading: 'Step 3: Get Individual Commit History',
+        content:
+          'For each top contributor:\n\nGET https://api.github.com/repos/{owner}/{repo}/commits?author={username}\n\nThis shows their specific commits and impact',
+      },
+      {
+        heading: 'Step 4: Create Contributor Recognition',
+        content:
+          'Build a "Contributors" page showing:\n• Top 10 all-time contributors\n• Recent active contributors\n• Contribution count\n• Links to their profiles\n• Lines added/removed\n\nThis recognizes valuable community members.',
+      },
+    ],
+  },
+  'common-errors': {
+    title: 'Common Errors',
+    subtitle: 'Debug and fix API errors',
+    breadcrumb: ['Home', 'Errors & Debugging', 'Common Errors'],
+    description:
+      'Understanding common GitHub API errors and how to fix them.',
+    sections: [
+      {
+        heading: '401 Unauthorized',
+        content:
+          'Problem: Invalid or missing authentication token\n\nSolutions:\n• Check your token is correct\n• Verify token hasn\'t expired\n• Generate a new token if needed\n• Make sure you\'re sending Authorization header',
+      },
+      {
+        heading: '403 Forbidden',
+        content:
+          'Problem: Usually rate limit exceeded\n\nSolutions:\n• Check X-RateLimit-Remaining header\n• Wait for reset time (X-RateLimit-Reset)\n• Use personal access token (higher limits)\n• Implement caching to reduce requests\n• Use GitHub Apps for even higher limits',
+      },
+      {
+        heading: '404 Not Found',
+        content:
+          'Problem: Repository, user, or endpoint doesn\'t exist\n\nSolutions:\n• Verify username spelling\n• Check repository name\n• Ensure the repo is public (or you have access)\n• Confirm the endpoint path is correct',
+      },
+      {
+        heading: '422 Unprocessable Entity',
+        content:
+          'Problem: Invalid parameters\n\nSolutions:\n• Check query parameter names\n• Verify parameter types (string vs number)\n• Ensure per_page is between 1-100\n• Review required vs optional parameters',
+      },
+    ],
+  },
+  'status-codes': {
+    title: 'Status Codes',
+    subtitle: 'Understanding HTTP status codes',
+    breadcrumb: ['Home', 'Errors & Debugging', 'Status Codes'],
+    description:
+      'GitHub API uses standard HTTP status codes to indicate request success or failure.',
+    sections: [
+      {
+        heading: '2xx Success',
+        content:
+          '200 OK: Request succeeded, data returned\n201 Created: Resource successfully created\n204 No Content: Request succeeded, no data to return',
+      },
+      {
+        heading: '3xx Redirection',
+        content:
+          '301 Moved Permanently: Resource moved to new location\n304 Not Modified: Resource hasn\'t changed since last request\n307 Temporary Redirect: Request redirected temporarily',
+      },
+      {
+        heading: '4xx Client Error',
+        content:
+          '400 Bad Request: Invalid request format\n401 Unauthorized: Authentication required\n403 Forbidden: No permission/rate limited\n404 Not Found: Resource doesn\'t exist\n422 Unprocessable Entity: Invalid parameters',
+      },
+      {
+        heading: '5xx Server Error',
+        content:
+          '500 Internal Server Error: GitHub server error\n502 Bad Gateway: GitHub service temporarily down\n503 Service Unavailable: GitHub maintenance/overload\n\nFor 5xx errors, retry after a delay.',
+      },
+    ],
+  },
 }
 
 export function Content({ pageId }: ContentProps) {
@@ -470,6 +673,7 @@ export function Content({ pageId }: ContentProps) {
     breadcrumb,
     description,
     syntax,
+    curl,
     parameters,
     response,
     useCases,
@@ -523,6 +727,18 @@ export function Content({ pageId }: ContentProps) {
               <pre className="bg-slate-900 border border-slate-800 rounded-lg p-4 overflow-x-auto">
                 <code className="text-slate-300 font-mono text-sm whitespace-pre-wrap">
                   {syntax}
+                </code>
+              </pre>
+            </section>
+          )}
+
+          {/* cURL Example */}
+          {curl && (
+            <section className="mb-10">
+              <h2 className="text-lg font-semibold text-slate-100 mb-3">cURL Example</h2>
+              <pre className="bg-slate-900 border border-slate-800 rounded-lg p-4 overflow-x-auto">
+                <code className="text-green-400 font-mono text-sm whitespace-pre-wrap">
+                  {curl}
                 </code>
               </pre>
             </section>
